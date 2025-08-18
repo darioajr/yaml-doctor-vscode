@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  web:
+    image: nginx:latest  # Issue: using :latest tag
+    ports:
+      - "80:80"
+    # Issue: missing restart policy
+  
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - database
+
+  database:
+    image: postgres:latest  # Issue: using :latest tag
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password  # Issue: hardcoded password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

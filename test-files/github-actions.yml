@@ -1,0 +1,28 @@
+name: CI/CD Pipeline
+# Issue: missing 'on' trigger events
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Good: specifies runner
+    steps:
+    - uses: actions/checkout@v2  # Issue: not pinned to specific version
+    - name: Setup Node.js
+      uses: actions/setup-node@v2  # Issue: not pinned to specific version
+      with:
+        node-version: '16'
+    
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Build
+      run: npm run build
+
+  deploy:
+    # Issue: missing runs-on
+    needs: build
+    steps:
+    - name: Deploy to production
+      run: echo "Deploying..."

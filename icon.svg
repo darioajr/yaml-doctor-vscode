@@ -1,0 +1,33 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1976D2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="url(#grad1)" stroke="#1565C0" stroke-width="2"/>
+  
+  <!-- Stethoscope icon representing "doctor" -->
+  <g fill="white" stroke="white" stroke-width="2">
+    <!-- Stethoscope head -->
+    <circle cx="50" cy="35" r="8" fill="none"/>
+    <!-- Stethoscope tubes -->
+    <path d="M50 43 Q35 50 35 65 Q35 75 45 75" fill="none"/>
+    <path d="M50 43 Q65 50 65 65 Q65 75 55 75" fill="none"/>
+    <!-- Chest piece -->
+    <circle cx="50" cy="80" r="12" fill="white"/>
+    <circle cx="50" cy="80" r="8" fill="#1976D2"/>
+  </g>
+  
+  <!-- YAML bracket symbols -->
+  <g fill="white" font-family="monospace" font-size="20" font-weight="bold">
+    <text x="75" y="45" text-anchor="middle">{</text>
+    <text x="85" y="65" text-anchor="middle">}</text>
+    <text x="75" y="85" text-anchor="middle">:</text>
+  </g>
+  
+  <!-- Small checkmark for "health" -->
+  <path d="M85 25 L90 30 L100 20" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>
