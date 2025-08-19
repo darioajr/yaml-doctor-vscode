@@ -12,14 +12,14 @@ on:
         type: string
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
 
 jobs:
   test:
     name: Test Extension
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-22.04, windows-2022, macos-13]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
@@ -56,7 +56,7 @@ jobs:
 
   package:
     name: Package Extension
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: test
     outputs:
       version: ${{ steps.package-version.outputs.version }}
@@ -117,7 +117,7 @@ jobs:
 
   publish-marketplace:
     name: Publish to VS Code Marketplace
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [test, package]
     environment: production
     steps:
@@ -149,7 +149,7 @@ jobs:
 
   publish-openvsx:
     name: Publish to Open VSX Registry
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [test, package]
     environment: production
     steps:
@@ -181,7 +181,7 @@ jobs:
 
   create-release:
     name: Create GitHub Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [package, publish-marketplace]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     steps:
