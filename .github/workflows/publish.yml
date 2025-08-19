@@ -17,7 +17,10 @@ env:
 jobs:
   test:
     name: Test Extension
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -37,7 +40,18 @@ jobs:
       - name: Compile TypeScript
         run: npm run compile
 
-      - name: Run tests
+      - name: Setup display for tests (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Run tests (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm test
+
+      - name: Run tests (Windows/macOS)
+        if: runner.os != 'Linux'
         run: npm test
 
   package:
@@ -76,15 +90,15 @@ jobs:
 
       - name: Update package.json version
         run: |
-          npm version ${{ env.VERSION }} --no-git-tag-version
+          npm version ${{ steps.get-version.outputs.version }} --no-git-tag-version
 
       - name: Package extension
         id: package-version
         run: |
-          VSIX_FILE="yaml-doctor-${{ env.VERSION }}.vsix"
+          VSIX_FILE="yaml-doctor-${{ steps.get-version.outputs.version }}.vsix"
           vsce package --out $VSIX_FILE
           echo "vsix-file=$VSIX_FILE" >> $GITHUB_OUTPUT
-          echo "version=${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          echo "version=${{ steps.get-version.outputs.version }}" >> $GITHUB_OUTPUT
 
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
