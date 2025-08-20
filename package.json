@@ -2,7 +2,7 @@
   "name": "yaml-doctor",
   "displayName": "YAML Doctor",
   "description": "VS Code extension for YAML analysis and diagnostics using yaml-doctor",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "darioajr",
   "author": {
     "name": "Dario Alves Junior",
@@ -20,7 +20,7 @@
     "url": "https://github.com/darioajr/yaml-doctor/issues"
   },
   "engines": {
-    "vscode": "^1.103.0"
+    "vscode": "^1.101.1"
   },
   "categories": [
     "Linters",

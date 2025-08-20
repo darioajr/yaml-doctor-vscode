@@ -16,6 +16,11 @@ All notable changes to the "yaml-doctor" extension will be documented in this fi
 - 🔄 Workspace-wide analysis capability
 - 💡 Auto-analysis on file save (optional)
 
+## [0.1.4] - 2025-08-20
+
+### Added
+- 🎉 VSCode version >= 1.101.1 support
+
 ### Commands
 - `YAML Doctor: Analyze Current YAML File` - Analyze the currently open YAML file
 - `YAML Doctor: Analyze All YAML Files in Workspace` - Analyze all YAML files in workspace

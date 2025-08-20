@@ -107,6 +107,11 @@ Initial release of YAML Doctor VS Code Extension:
 - Diagnostics integration
 - Badge generation
 
+### 0.1.4
+
+Downgrade compatibility version support:
+- Version 1.101.1 supported
+
 ---
 
 ## Contributing
