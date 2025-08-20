@@ -34,7 +34,7 @@ All notable changes to the "yaml-doctor" extension will be documented in this fi
 
 ### Requirements
 - Docker must be installed and running
-- VS Code version 1.103.0 or higher
+- VS Code version 1.101.1 or higher
 
 ---
 
