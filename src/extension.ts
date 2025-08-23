@@ -1,10 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import YamlDoctorCore from '@darioajr/yaml-doctor';
 
 interface YamlDoctorReport {
 	score: number;
@@ -39,31 +36,29 @@ class YamlDoctorProvider {
 				return;
 			}
 
-			const config = vscode.workspace.getConfiguration('yamlDoctor');
-			const dockerImage = config.get<string>('dockerImage', 'darioajr/yaml-doctor:latest');
-			
 			const workspacePath = workspaceFolder.uri.fsPath;
 			const relativePath = path.relative(workspacePath, uri.fsPath);
-			
-			// Run yaml-doctor in Docker
-			const command = `docker run --rm -v "${workspacePath}":/work ${dockerImage} --path /work --no-serve --output-json`;
-			
-			this.outputChannel.appendLine(`Running command: ${command}`);
-			
-			const { stdout } = await execAsync(command);
-			
-			// Parse the JSON report
-			const reportPath = path.join(workspacePath, 'yaml-doctor-report.json');
-			if (fs.existsSync(reportPath)) {
-				const reportContent = fs.readFileSync(reportPath, 'utf8');
-				const report: YamlDoctorReport = JSON.parse(reportContent);
-				
-				this.updateDiagnostics(uri, report, relativePath);
-				
-				vscode.window.showInformationMessage(
-					`YAML Doctor analysis complete. Score: ${report.score}/100`
-				);
-			}
+			this.outputChannel.appendLine(`Analisando arquivo com @darioajr/yaml-doctor: ${uri.fsPath}`);
+			const doctor = new YamlDoctorCore();
+			const { result } = await doctor.scanAndReport(uri.fsPath, { generateJson: false, generateHtml: false, generateBadge: false });
+			this.updateDiagnostics(uri, {
+				score: result.score,
+				files: [
+					{
+						file: relativePath,
+						issues: result.files.find(f => path.relative(workspacePath, f.path) === relativePath)?.issues.map(issue => ({
+							line: issue.line ?? 0,
+							column: 0,
+							severity: issue.severity,
+							message: issue.message,
+							rule: issue.code ?? ''
+						})) ?? []
+					}
+				]
+			}, relativePath);
+			vscode.window.showInformationMessage(
+				`YAML Doctor analysis complete. Score: ${result.score}/100`
+			);
 			
 		} catch (error) {
 			this.outputChannel.appendLine(`Error: ${error}`);
@@ -79,39 +74,37 @@ class YamlDoctorProvider {
 		}
 
 		try {
-			const config = vscode.workspace.getConfiguration('yamlDoctor');
-			const dockerImage = config.get<string>('dockerImage', 'darioajr/yaml-doctor:latest');
-			
 			const workspacePath = workspaceFolders[0].uri.fsPath;
-			
-			// Run yaml-doctor in Docker for entire workspace
-			const command = `docker run --rm -v "${workspacePath}":/work ${dockerImage} --path /work --no-serve --output-json`;
-			
-			this.outputChannel.appendLine(`Running workspace analysis: ${command}`);
-			
+			this.outputChannel.appendLine(`Analisando workspace com @darioajr/yaml-doctor: ${workspacePath}`);
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: "Analyzing YAML files with YAML Doctor...",
 				cancellable: false
 			}, async (progress) => {
-				const { stdout } = await execAsync(command);
-				
-				// Parse the JSON report
-				const reportPath = path.join(workspacePath, 'yaml-doctor-report.json');
-				if (fs.existsSync(reportPath)) {
-					const reportContent = fs.readFileSync(reportPath, 'utf8');
-					const report: YamlDoctorReport = JSON.parse(reportContent);
-					
-					// Update diagnostics for all files
-					for (const fileReport of report.files) {
-						const fileUri = vscode.Uri.file(path.join(workspacePath, fileReport.file));
-						this.updateDiagnostics(fileUri, report, fileReport.file);
-					}
-					
-					vscode.window.showInformationMessage(
-						`YAML Doctor workspace analysis complete. Overall score: ${report.score}/100`
-					);
+				const doctor = new YamlDoctorCore();
+				const { result } = await doctor.scanAndReport(workspacePath, { generateJson: false, generateHtml: false, generateBadge: false });
+				for (const fileResult of result.files) {
+					const relativeFilePath = path.relative(workspacePath, fileResult.path);
+					const fileUri = vscode.Uri.file(path.join(workspacePath, relativeFilePath));
+					this.updateDiagnostics(fileUri, {
+						score: result.score,
+						files: [
+							{
+								file: relativeFilePath,
+								issues: fileResult.issues.map(issue => ({
+									line: issue.line ?? 0,
+									column: 0,
+									severity: issue.severity,
+									message: issue.message,
+									rule: issue.code ?? ''
+								}))
+							}
+						]
+					}, relativeFilePath);
 				}
+				vscode.window.showInformationMessage(
+					`YAML Doctor workspace analysis complete. Overall score: ${result.score}/100`
+				);
 			});
 			
 		} catch (error) {

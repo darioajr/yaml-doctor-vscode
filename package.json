@@ -2,7 +2,7 @@
   "name": "yaml-doctor",
   "displayName": "YAML Doctor",
   "description": "VS Code extension for YAML analysis and diagnostics using yaml-doctor",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "darioajr",
   "author": {
     "name": "Dario Alves Junior",
@@ -10,14 +10,14 @@
   },
   "license": "Apache-2.0",
   "icon": "icon.png",
-  "homepage": "https://github.com/darioajr/yaml-doctor",
+  "homepage": "https://github.com/darioajr/yaml-doctor-vscode#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/darioajr/yaml-doctor-vscode.git",
     "directory": "vscode"
   },
   "bugs": {
-    "url": "https://github.com/darioajr/yaml-doctor/issues"
+    "url": "https://github.com/darioajr/yaml-doctor-vscode/issues"
   },
   "engines": {
     "vscode": "^1.101.1"
@@ -119,6 +119,7 @@
     "install-extension": "code --install-extension *.vsix"
   },
   "dependencies": {
+    "@darioajr/yaml-doctor": "^1.0.0",
     "child_process": "^1.0.2"
   },
   "devDependencies": {

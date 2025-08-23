@@ -21,6 +21,11 @@ All notable changes to the "yaml-doctor" extension will be documented in this fi
 ### Added
 - 🎉 VSCode version >= 1.101.1 support
 
+## [0.1.5] - 2025-08-22
+
+### Added
+- 🎉 Unified use of npm @darioajr/yaml-doctor lib
+
 ### Commands
 - `YAML Doctor: Analyze Current YAML File` - Analyze the currently open YAML file
 - `YAML Doctor: Analyze All YAML Files in Workspace` - Analyze all YAML files in workspace
