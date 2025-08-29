@@ -42,7 +42,7 @@
     "commands": [
       {
         "command": "yaml-doctor.analyzeFile",
-        "title": "Analyze Current YAML File",
+        "title": "Analyze YAML File or Directory",
         "category": "YAML Doctor"
       },
       {
@@ -65,7 +65,7 @@
       "explorer/context": [
         {
           "command": "yaml-doctor.analyzeFile",
-          "when": "resourceExtname == .yml || resourceExtname == .yaml",
+          "when": "resourceExtname == .yml || resourceExtname == .yaml || explorerResourceIsFolder",
           "group": "yaml-doctor"
         }
       ],

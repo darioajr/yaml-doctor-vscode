@@ -26,6 +26,23 @@ class YamlDoctorProvider {
 		this.outputChannel = vscode.window.createOutputChannel('YAML Doctor');
 	}
 
+	async analyzeTarget(uri: vscode.Uri): Promise<void> {
+		try {
+			const stats = fs.statSync(uri.fsPath);
+			
+			if (stats.isDirectory()) {
+				await this.analyzeDirectory(uri);
+			} else if (stats.isFile()) {
+				await this.analyzeFile(uri);
+			} else {
+				vscode.window.showErrorMessage('Selected item is neither a file nor a directory');
+			}
+		} catch (error) {
+			this.outputChannel.appendLine(`Error: ${error}`);
+			vscode.window.showErrorMessage(`YAML Doctor analysis failed: ${error}`);
+		}
+	}
+
 	async analyzeFile(uri: vscode.Uri): Promise<void> {
 		try {
 			this.outputChannel.appendLine(`Analyzing file: ${uri.fsPath}`);
@@ -38,9 +55,13 @@ class YamlDoctorProvider {
 
 			const workspacePath = workspaceFolder.uri.fsPath;
 			const relativePath = path.relative(workspacePath, uri.fsPath);
-			this.outputChannel.appendLine(`Analisando arquivo com @darioajr/yaml-doctor: ${uri.fsPath}`);
+			this.outputChannel.appendLine(`Analyzing file with @darioajr/yaml-doctor: ${uri.fsPath}`);
 			const doctor = new YamlDoctorCore();
-			const { result } = await doctor.scanAndReport(uri.fsPath, { generateJson: false, generateHtml: false, generateBadge: false });
+			const { result } = await doctor.scanAndReport(workspacePath, { 
+				generateJson: false, 
+				generateHtml: false, 
+				generateBadge: false
+			});
 			this.updateDiagnostics(uri, {
 				score: result.score,
 				files: [
@@ -66,6 +87,53 @@ class YamlDoctorProvider {
 		}
 	}
 
+	async analyzeDirectory(uri: vscode.Uri): Promise<void> {
+		try {
+			this.outputChannel.appendLine(`Analyzing directory: ${uri.fsPath}`);
+			
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: "Analyzing YAML files in directory...",
+				cancellable: false
+			}, async (progress) => {
+				const doctor = new YamlDoctorCore();
+				const { result } = await doctor.scanAndReport(uri.fsPath, { 
+					generateJson: false, 
+					generateHtml: false, 
+					generateBadge: false
+				});
+				
+				for (const fileResult of result.files) {
+					const relativeFilePath = path.relative(uri.fsPath, fileResult.path);
+					const fileUri = vscode.Uri.file(path.join(uri.fsPath, relativeFilePath));
+					this.updateDiagnostics(fileUri, {
+						score: result.score,
+						files: [
+							{
+								file: relativeFilePath,
+								issues: fileResult.issues.map(issue => ({
+									line: issue.line ?? 0,
+									column: 0,
+									severity: issue.severity,
+									message: issue.message,
+									rule: issue.code ?? ''
+								}))
+							}
+						]
+					}, relativeFilePath);
+				}
+				
+				vscode.window.showInformationMessage(
+					`YAML Doctor directory analysis complete. Overall score: ${result.score}/100`
+				);
+			});
+			
+		} catch (error) {
+			this.outputChannel.appendLine(`Error: ${error}`);
+			vscode.window.showErrorMessage(`YAML Doctor directory analysis failed: ${error}`);
+		}
+	}
+
 	async analyzeWorkspace(): Promise<void> {
 		const workspaceFolders = vscode.workspace.workspaceFolders;
 		if (!workspaceFolders) {
@@ -75,7 +143,7 @@ class YamlDoctorProvider {
 
 		try {
 			const workspacePath = workspaceFolders[0].uri.fsPath;
-			this.outputChannel.appendLine(`Analisando workspace com @darioajr/yaml-doctor: ${workspacePath}`);
+			this.outputChannel.appendLine(`Analyzing workspace with @darioajr/yaml-doctor: ${workspacePath}`);
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: "Analyzing YAML files with YAML Doctor...",
@@ -213,9 +281,9 @@ export function activate(context: vscode.ExtensionContext) {
 			uri = vscode.window.activeTextEditor.document.uri;
 		}
 		if (uri) {
-			await provider.analyzeFile(uri);
+			await provider.analyzeTarget(uri);
 		} else {
-			vscode.window.showErrorMessage('No YAML file selected');
+			vscode.window.showErrorMessage('No YAML file or directory selected');
 		}
 	});
 
